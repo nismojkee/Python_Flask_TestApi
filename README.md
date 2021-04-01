@@ -8,7 +8,7 @@ Requirements:
 * Flask Restful (API)
 * Flask SQLAlchemy
 * Flask Migrate
-* Pandas (ExcelFile)
+* XLRD
 * Datetime
 * Postman
 * Virtual Environment

@@ -1,4 +1,4 @@
-import os, string, random, pandas
+import os, string, random, xlrd
 from datetime import datetime
 from app import db, app
 
@@ -29,21 +29,24 @@ class File(db.Model):
 		return ''.join(random.choice(chars) for _ in range(size))
 
 	def process(self):
-		file = pandas.ExcelFile(os.path.join(app.config['UPLOAD_DIR'], '.'.join([self.id, self.extension])))
+		file = xlrd.open_workbook(os.path.join(app.config['UPLOAD_DIR'], '.'.join([self.id, self.extension])))
 		self.status = 'Processing'
-		for data in [file.parse(sheet) for sheet in file.sheet_names]:
-			if 'after' in data.columns and 'before' in data.columns:
-				print(data)
-				x = data.before - data.after == 0
-				indexOfX = x.idxmin()
-				msg = {
-					'before': 'removed {}',
-					'after': 'added {}',
-				}
-				col = 'before'
-				if data.after.count() > data.before.count():
-					col = 'after'
-				self.processed_date = datetime.utcnow()
-				self.status = 'Ready'
-				self.result = msg[col].format(data[col][indexOfX])
+		ar1 = []
+		ar2 = []
+		x = []
+		needCol = []
+		for sheet in file.sheets():
+				for row in range(sheet.nrows):
+					for col in range(sheet.ncols):
+						if sheet.cell_value(row, col) == 'before':
+							ar1 = sheet.col_values(col)
+						if sheet.cell_value(row, col) == 'after':
+							ar2 = sheet.col_values(col)
+						x = list(set(ar1) & set(ar2))
+						needCol = 'before: removed {}'
+						if ar1.count(ar1) > ar2.count(ar2):
+							needCol = 'after: added {}'
+		self.processed_date = datetime.utcnow()
+		self.status = 'Ready'
+		self.result = needCol.format(int(x[0]))
 		db.session.commit()

@@ -10,7 +10,6 @@ Requirements:
 * Flask Migrate
 * XLRD
 * Datetime
-* Postman
 * Virtual Environment
 
 Tip: for Windows you must start PowerShell in folder with **api.py** not in app folder<br/>
